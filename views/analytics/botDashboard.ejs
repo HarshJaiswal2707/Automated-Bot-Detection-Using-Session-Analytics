@@ -1,0 +1,1304 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Bot Detection Research Dashboard</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+
+            background: #f4f6f9;
+            color: #1f2937;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 1500px;
+            margin: auto;
+        }
+
+        /* ==============================
+           HEADER
+        ============================== */
+
+        .header {
+            background: #111827;
+            color: white;
+            padding: 30px;
+            border-radius: 18px;
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            font-size: 30px;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #cbd5e1;
+            font-size: 15px;
+        }
+
+        /* ==============================
+           CARDS
+        ============================== */
+
+        .cards {
+            display: grid;
+            grid-template-columns:
+                repeat(4, 1fr);
+
+            gap: 18px;
+            margin-bottom: 25px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 22px;
+            box-shadow:
+                0 4px 15px
+                rgba(0,0,0,0.06);
+        }
+
+        .card-title {
+            color: #6b7280;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .card-value {
+            font-size: 30px;
+            font-weight: bold;
+        }
+
+        .human {
+            color: #2563eb;
+        }
+
+        .bot {
+            color: #dc2626;
+        }
+
+        .basic {
+            color: #ea580c;
+        }
+
+        .humanlike {
+            color: #7c3aed;
+        }
+
+        /* ==============================
+           SECTION
+        ============================== */
+
+        .section {
+            background: white;
+            padding: 25px;
+            border-radius: 18px;
+            margin-bottom: 25px;
+
+            box-shadow:
+                0 4px 15px
+                rgba(0,0,0,0.06);
+        }
+
+        .section h2 {
+            margin-bottom: 20px;
+            font-size: 21px;
+        }
+
+        /* ==============================
+           METRICS
+        ============================== */
+
+        .metrics {
+            display: grid;
+            grid-template-columns:
+                repeat(4, 1fr);
+
+            gap: 18px;
+        }
+
+        .metric {
+            text-align: center;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 12px;
+        }
+
+        .metric h3 {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 8px;
+        }
+
+        .metric-value {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        /* ==============================
+           CHARTS
+        ============================== */
+
+        .charts {
+            display: grid;
+            grid-template-columns:
+                repeat(2, 1fr);
+
+            gap: 25px;
+        }
+
+        .chart-box {
+            height: 380px;
+        }
+
+        .chart-box canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        /* ==============================
+           TABLE
+        ============================== */
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 900px;
+        }
+
+        th,
+        td {
+            padding: 13px 12px;
+            border-bottom:
+                1px solid #e5e7eb;
+
+            text-align: left;
+            font-size: 13px;
+        }
+
+        th {
+            background: #f8fafc;
+            font-weight: 600;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-human {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .badge-basic {
+            background: #ffedd5;
+            color: #c2410c;
+        }
+
+        .badge-humanlike {
+            background: #ede9fe;
+            color: #6d28d9;
+        }
+
+        .badge-correct {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .score {
+            font-weight: bold;
+        }
+
+        /* ==============================
+           CONFUSION MATRIX
+        ============================== */
+
+        .matrix {
+            display: grid;
+            grid-template-columns:
+                repeat(2, 1fr);
+
+            gap: 15px;
+            max-width: 700px;
+            margin: auto;
+        }
+
+        .matrix-box {
+            padding: 30px;
+            border-radius: 14px;
+            text-align: center;
+            background: #f8fafc;
+        }
+
+        .matrix-box h3 {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 10px;
+        }
+
+        .matrix-number {
+            font-size: 35px;
+            font-weight: bold;
+        }
+
+        /* ==============================
+           FOOTER NOTE
+        ============================== */
+
+        .note {
+            background: #fff7ed;
+            border-left:
+                4px solid #f97316;
+
+            padding: 16px;
+            border-radius: 8px;
+
+            font-size: 14px;
+            line-height: 1.6;
+
+            color: #7c2d12;
+        }
+
+        /* ==============================
+           RESPONSIVE
+        ============================== */
+
+        @media (max-width: 1000px) {
+
+            .cards,
+            .metrics {
+                grid-template-columns:
+                    repeat(2, 1fr);
+            }
+
+            .charts {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+
+            body {
+                padding: 15px;
+            }
+
+            .cards,
+            .metrics {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<div class="container">
+
+
+    <!-- ==================================
+         HEADER
+    =================================== -->
+
+    <div class="header">
+
+        <h1>
+            BOT DETECTION RESEARCH DASHBOARD
+        </h1>
+
+        <p>
+            Behavioral Analysis Based Human vs Automated
+            Browser Session Detection
+        </p>
+
+    </div>
+
+
+    <!-- ==================================
+         DATASET SUMMARY
+    =================================== -->
+
+    <div class="cards">
+
+        <div class="card">
+
+            <div class="card-title">
+                Total Sessions
+            </div>
+
+            <div class="card-value">
+                <%= totalSessions %>
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="card-title">
+                Human Sessions
+            </div>
+
+            <div class="card-value human">
+                <%= humanCount %>
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="card-title">
+                Basic Bot Sessions
+            </div>
+
+            <div class="card-value basic">
+                <%= basicBotCount %>
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="card-title">
+                Human-like Bot Sessions
+            </div>
+
+            <div class="card-value humanlike">
+                <%= humanLikeBotCount %>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==================================
+         PERFORMANCE
+    =================================== -->
+
+    <div class="section">
+
+        <h2>
+            Detector Performance
+        </h2>
+
+        <div class="metrics">
+
+            <div class="metric">
+
+                <h3>Accuracy</h3>
+
+                <div class="metric-value">
+                    <%= humanLikeExperiment.metrics.accuracy %>%
+                </div>
+
+            </div>
+
+
+            <div class="metric">
+
+                <h3>Precision</h3>
+
+                <div class="metric-value">
+                    <%= humanLikeExperiment.metrics.precision %>%
+                </div>
+
+            </div>
+
+
+            <div class="metric">
+
+                <h3>Recall</h3>
+
+                <div class="metric-value">
+                    <%= humanLikeExperiment.metrics.recall %>%
+                </div>
+
+            </div>
+
+
+            <div class="metric">
+
+                <h3>F1 Score</h3>
+
+                <div class="metric-value">
+                    <%= humanLikeExperiment.metrics.f1Score %>%
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==================================
+         CLASSIFICATION CHARTS
+    =================================== -->
+
+    <div class="charts">
+
+
+        <div class="section chart-box">
+
+            <h2>
+                Session Distribution
+            </h2>
+
+            <canvas id="sessionDistribution"></canvas>
+
+        </div>
+
+
+        <div class="section chart-box">
+
+            <h2>
+                Detector Performance
+            </h2>
+
+            <canvas id="performanceChart"></canvas>
+
+        </div>
+
+
+    </div>
+
+
+    <!-- ==================================
+         FEATURE CHARTS
+    =================================== -->
+
+    <div class="section">
+
+        <h2>
+            Behavioral Feature Analysis
+        </h2>
+
+        <div class="charts">
+
+
+            <div class="chart-box">
+
+                <canvas id="botScoreChart"></canvas>
+
+            </div>
+
+
+            <div class="chart-box">
+
+                <canvas id="cvChart"></canvas>
+
+            </div>
+
+
+            <div class="chart-box">
+
+                <canvas id="repetitionChart"></canvas>
+
+            </div>
+
+
+            <div class="chart-box">
+
+                <canvas id="diversityChart"></canvas>
+
+            </div>
+
+
+            <div class="chart-box">
+
+                <canvas id="meaningfulChart"></canvas>
+
+            </div>
+
+
+            <div class="chart-box">
+
+                <canvas id="durationChart"></canvas>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==================================
+         CONFUSION MATRIX
+    =================================== -->
+
+    <div class="section">
+
+        <h2>
+            Confusion Matrix
+        </h2>
+
+        <div class="matrix">
+
+            <div class="matrix-box">
+
+                <h3>
+                    True Positive
+                </h3>
+
+                <div class="matrix-number">
+                    <%= humanLikeExperiment.confusionMatrix.truePositive %>
+                </div>
+
+            </div>
+
+
+            <div class="matrix-box">
+
+                <h3>
+                    True Negative
+                </h3>
+
+                <div class="matrix-number">
+                    <%= humanLikeExperiment.confusionMatrix.trueNegative %>
+                </div>
+
+            </div>
+
+
+            <div class="matrix-box">
+
+                <h3>
+                    False Positive
+                </h3>
+
+                <div class="matrix-number">
+                    <%= humanLikeExperiment.confusionMatrix.falsePositive %>
+                </div>
+
+            </div>
+
+
+            <div class="matrix-box">
+
+                <h3>
+                    False Negative
+                </h3>
+
+                <div class="matrix-number">
+                    <%= humanLikeExperiment.confusionMatrix.falseNegative %>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==================================
+         ALL 30 SESSIONS
+    =================================== -->
+
+    <div class="section">
+
+        <h2>
+            Complete Experimental Dataset
+        </h2>
+
+        <div class="table-wrapper">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            #
+                        </th>
+
+                        <th>
+                            Session ID
+                        </th>
+
+                        <th>
+                            Actual
+                        </th>
+
+                        <th>
+                            Predicted
+                        </th>
+
+                        <th>
+                            Bot Type
+                        </th>
+
+                        <th>
+                            Bot Score
+                        </th>
+
+                        <th>
+                            Events
+                        </th>
+
+                        <th>
+                            Duration
+                        </th>
+
+                        <th>
+                            CV
+                        </th>
+
+                        <th>
+                            Repetition
+                        </th>
+
+                        <th>
+                            Diversity
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                <% sessions.forEach((session, index) => { %>
+
+                    <tr>
+
+                        <td>
+                            <%= index + 1 %>
+                        </td>
+
+
+                        <td>
+                            <%= session.sessionId %>
+                        </td>
+
+
+                        <td>
+
+                            <% if (session.actual === "Human") { %>
+
+                                <span class="badge badge-human">
+                                    Human
+                                </span>
+
+                            <% } else { %>
+
+                                <span class="badge badge-basic">
+                                    Bot
+                                </span>
+
+                            <% } %>
+
+                        </td>
+
+
+                        <td>
+
+                            <span class="badge badge-correct">
+                                <%= session.predicted %>
+                            </span>
+
+                        </td>
+
+
+                        <td>
+
+                            <% if (session.botType === "Human-like Bot") { %>
+
+                                <span class="badge badge-humanlike">
+                                    Human-like Bot
+                                </span>
+
+                            <% } else if (session.botType === "Basic Bot") { %>
+
+                                <span class="badge badge-basic">
+                                    Basic Bot
+                                </span>
+
+                            <% } else { %>
+
+                                <span class="badge badge-human">
+                                    Human
+                                </span>
+
+                            <% } %>
+
+                        </td>
+
+
+                        <td class="score">
+
+                            <%= session.botScore %>
+
+                        </td>
+
+
+                        <td>
+
+                            <%= session.features.totalEvents %>
+
+                        </td>
+
+
+                        <td>
+
+                            <%= session.features.sessionDurationSeconds %>s
+
+                        </td>
+
+
+                        <td>
+
+                            <%= session.features.coefficientVariation %>
+
+                        </td>
+
+
+                        <td>
+
+                            <%= session.features.repetitionRatio %>
+
+                        </td>
+
+
+                        <td>
+
+                            <%= session.features.eventTypeDiversity %>
+
+                        </td>
+
+                    </tr>
+
+                <% }); %>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==================================
+         RESEARCH NOTE
+    =================================== -->
+
+    <div class="section">
+
+        <div class="note">
+
+            <strong>Research Note:</strong>
+
+            The reported performance represents the result
+            obtained on the experimental dataset of 30
+            sessions consisting of human, basic automated,
+            and human-like automated browser sessions.
+
+            The result is presented as an experimental
+            evaluation and not as a universal real-world
+            accuracy claim.
+
+        </div>
+
+    </div>
+
+
+</div>
+
+
+<script>
+
+    // ==========================================
+    // PREPARE SESSION DATA
+    // ==========================================
+
+    const sessions =
+        <%- JSON.stringify(sessions) %>;
+
+
+    const labels =
+        sessions.map(
+            (_, index) => `S${index + 1}`
+        );
+
+
+    // ==========================================
+    // SESSION DISTRIBUTION
+    // ==========================================
+
+    new Chart(
+        document.getElementById(
+            "sessionDistribution"
+        ),
+        {
+
+            type: "doughnut",
+
+            data: {
+
+                labels: [
+                    "Human",
+                    "Basic Bot",
+                    "Human-like Bot"
+                ],
+
+                datasets: [{
+
+                    data: [
+                        <%= humanCount %>,
+                        <%= basicBotCount %>,
+                        <%= humanLikeBotCount %>
+                    ]
+
+                }]
+
+            },
+
+            options: {
+
+                responsive: true,
+
+                maintainAspectRatio: false
+
+            }
+
+        }
+    );
+
+
+    // ==========================================
+    // PERFORMANCE
+    // ==========================================
+
+    new Chart(
+        document.getElementById(
+            "performanceChart"
+        ),
+        {
+
+            type: "bar",
+
+            data: {
+
+                labels: [
+                    "Accuracy",
+                    "Precision",
+                    "Recall",
+                    "F1 Score"
+                ],
+
+                datasets: [{
+
+                    label: "Percentage",
+
+                    data: [
+
+                        <%= humanLikeExperiment.metrics.accuracy %>,
+
+                        <%= humanLikeExperiment.metrics.precision %>,
+
+                        <%= humanLikeExperiment.metrics.recall %>,
+
+                        <%= humanLikeExperiment.metrics.f1Score %>
+
+                    ]
+
+                }]
+
+            },
+
+            options: {
+
+                responsive: true,
+
+                maintainAspectRatio: false,
+
+                scales: {
+
+                    y: {
+
+                        beginAtZero: true,
+
+                        max: 100
+
+                    }
+
+                }
+
+            }
+
+        }
+    );
+
+
+    // ==========================================
+    // BOT SCORE
+    // ==========================================
+
+    new Chart(
+        document.getElementById(
+            "botScoreChart"
+        ),
+        {
+
+            type: "bar",
+
+            data: {
+
+                labels,
+
+                datasets: [{
+
+                    label: "Bot Score",
+
+                    data:
+                        sessions.map(
+                            session =>
+                                session.botScore
+                        )
+
+                }]
+
+            },
+
+            options: {
+
+                responsive: true,
+
+                maintainAspectRatio: false,
+
+                scales: {
+
+                    y: {
+                        beginAtZero: true
+                    }
+
+                }
+
+            }
+
+        }
+    );
+
+
+    // ==========================================
+    // COEFFICIENT OF VARIATION
+    // ==========================================
+
+    new Chart(
+        document.getElementById(
+            "cvChart"
+        ),
+        {
+
+            type: "line",
+
+            data: {
+
+                labels,
+
+                datasets: [{
+
+                    label:
+                        "Coefficient of Variation",
+
+                    data:
+                        sessions.map(
+                            session =>
+                                session.features
+                                    .coefficientVariation
+                        ),
+
+                    tension: 0.3
+
+                }]
+
+            },
+
+            options: {
+
+                responsive: true,
+
+                maintainAspectRatio: false
+
+            }
+
+        }
+    );
+
+
+    // ==========================================
+    // REPETITION RATIO
+    // ==========================================
+
+    new Chart(
+        document.getElementById(
+            "repetitionChart"
+        ),
+        {
+
+            type: "line",
+
+            data: {
+
+                labels,
+
+                datasets: [{
+
+                    label:
+                        "Repetition Ratio",
+
+                    data:
+                        sessions.map(
+                            session =>
+                                session.features
+                                    .repetitionRatio
+                        ),
+
+                    tension: 0.3
+
+                }]
+
+            },
+
+            options: {
+
+                responsive: true,
+
+                maintainAspectRatio: false,
+
+                scales: {
+
+                    y: {
+
+                        beginAtZero: true,
+
+                        max: 1
+
+                    }
+
+                }
+
+            }
+
+        }
+    );
+
+
+    // ==========================================
+    // EVENT DIVERSITY
+    // ==========================================
+
+    new Chart(
+        document.getElementById(
+            "diversityChart"
+        ),
+        {
+
+            type: "line",
+
+            data: {
+
+                labels,
+
+                datasets: [{
+
+                    label:
+                        "Event Type Diversity",
+
+                    data:
+                        sessions.map(
+                            session =>
+                                session.features
+                                    .eventTypeDiversity
+                        ),
+
+                    tension: 0.3
+
+                }]
+
+            },
+
+            options: {
+
+                responsive: true,
+
+                maintainAspectRatio: false,
+
+                scales: {
+
+                    y: {
+
+                        beginAtZero: true,
+
+                        max: 1
+
+                    }
+
+                }
+
+            }
+
+        }
+    );
+
+
+    // ==========================================
+    // MEANINGFUL EVENT RATIO
+    // ==========================================
+
+    new Chart(
+        document.getElementById(
+            "meaningfulChart"
+        ),
+        {
+
+            type: "line",
+
+            data: {
+
+                labels,
+
+                datasets: [{
+
+                    label:
+                        "Meaningful Event Ratio",
+
+                    data:
+                        sessions.map(
+                            session =>
+                                session.features
+                                    .meaningfulEventRatio
+                        ),
+
+                    tension: 0.3
+
+                }]
+
+            },
+
+            options: {
+
+                responsive: true,
+
+                maintainAspectRatio: false,
+
+                scales: {
+
+                    y: {
+
+                        beginAtZero: true,
+
+                        max: 1
+
+                    }
+
+                }
+
+            }
+
+        }
+    );
+
+
+    // ==========================================
+    // SESSION DURATION
+    // ==========================================
+
+    new Chart(
+        document.getElementById(
+            "durationChart"
+        ),
+        {
+
+            type: "bar",
+
+            data: {
+
+                labels,
+
+                datasets: [{
+
+                    label:
+                        "Session Duration (seconds)",
+
+                    data:
+                        sessions.map(
+                            session =>
+                                session.features
+                                    .sessionDurationSeconds
+                        )
+
+                }]
+
+            },
+
+            options: {
+
+                responsive: true,
+
+                maintainAspectRatio: false,
+
+                scales: {
+
+                    y: {
+
+                        beginAtZero: true
+
+                    }
+
+                }
+
+            }
+
+        }
+    );
+
+</script>
+
+
+</body>
+
+</html>

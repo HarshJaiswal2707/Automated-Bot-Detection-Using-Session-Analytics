@@ -13,10 +13,11 @@ app.engine('ejs', ejsMate);
 
 app.use(express.static(path.join(__dirname, "/public")));
 app.use(express.urlencoded({ extended: true }));
-
+app.use(express.json());
 const listingRouter = require("./routes/listing.js");
 const reviewRouter = require("./routes/reviews.js");
 const userRouter = require("./routes/user.js");
+const analyticsRouter = require("./routes/analytics");
 
 const session = require("express-session");
 const flash = require("connect-flash");
@@ -91,7 +92,7 @@ app.get("/", (req, res) => {
 app.use("/listings", listingRouter);
 app.use("/listings/:id/reviews", reviewRouter);
 app.use("/", userRouter);
-
+app.use("/analytics", analyticsRouter);
 app.use((req, res, next) => {
     next(new ExpressError(404, "Page not Found"));
 });

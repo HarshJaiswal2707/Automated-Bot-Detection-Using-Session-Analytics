@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Bot Detection Result</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            color: #1f2937;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        .header {
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            font-size: 30px;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #6b7280;
+        }
+
+        .session-box {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.06);
+        }
+
+        .session-box strong {
+            color: #2563eb;
+        }
+
+        .result-card {
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .human {
+            background: #ecfdf5;
+            border: 2px solid #34d399;
+        }
+
+        .bot {
+            background: #fef2f2;
+            border: 2px solid #f87171;
+        }
+
+        .result-icon {
+            font-size: 55px;
+            margin-bottom: 10px;
+        }
+
+        .result-card h2 {
+            font-size: 38px;
+            margin-bottom: 10px;
+        }
+
+        .human h2 {
+            color: #059669;
+        }
+
+        .bot h2 {
+            color: #dc2626;
+        }
+
+        .result-card p {
+            color: #4b5563;
+            font-size: 17px;
+            margin-bottom: 15px;
+        }
+
+        .score {
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 30px;
+            background: white;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin-bottom: 25px;
+        }
+
+        .card {
+            background: white;
+            padding: 22px;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.06);
+        }
+
+        .card h3 {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 10px;
+        }
+
+        .card .value {
+            font-size: 25px;
+            font-weight: bold;
+            color: #111827;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .section {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.06);
+        }
+
+        .section h2 {
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 12px 8px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        th {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        td {
+            font-size: 14px;
+        }
+
+        .normal {
+            color: #059669;
+            font-weight: bold;
+        }
+
+        .warning {
+            color: #dc2626;
+            font-weight: bold;
+        }
+
+        .reason-list {
+            list-style: none;
+        }
+
+        .reason-list li {
+            padding: 12px;
+            margin-bottom: 10px;
+            background: #f9fafb;
+            border-radius: 8px;
+        }
+
+        .reason-list li::before {
+            content: "✓";
+            color: #2563eb;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        @media (max-width: 900px) {
+            .cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .cards {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                margin: 10px auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="header">
+        <h1>🛡️ Bot Detection Result</h1>
+        <p>
+            Session-based bot detection using interaction and timing features.
+        </p>
+    </div>
+
+    <% if (error) { %>
+
+        <div class="error">
+            <strong>Error:</strong>
+            <%= error %>
+        </div>
+
+    <% } else if (result) { %>
+
+        <div class="session-box">
+            <strong>Session ID:</strong>
+            <%= result.sessionId %>
+        </div>
+
+        <% if (result.prediction === "Human") { %>
+
+            <div class="result-card human">
+
+                <div class="result-icon">🟢</div>
+
+                <h2>HUMAN</h2>
+
+                <p>
+                    This session appears to be generated by a human user.
+                </p>
+
+                <div class="score">
+                    Bot Score:
+                    <%= result.botScore %> / <%= result.maxPossibleScore %>
+                </div>
+
+            </div>
+
+        <% } else { %>
+
+            <div class="result-card bot">
+
+                <div class="result-icon">🔴</div>
+
+                <h2>BOT</h2>
+
+                <p>
+                    This session shows interaction patterns associated
+                    with automated activity.
+                </p>
+
+                <div class="score">
+                    Bot Score:
+                    <%= result.botScore %> / <%= result.maxPossibleScore %>
+                </div>
+
+            </div>
+
+        <% } %>
+
+
+        <div class="cards">
+
+            <div class="card">
+                <h3>Session Duration</h3>
+                <div class="value">
+                    <%= result.features.sessionDurationSeconds %> sec
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Total Events</h3>
+                <div class="value">
+                    <%= result.features.totalEvents %>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Events / Minute</h3>
+                <div class="value">
+                    <%= result.features.eventsPerMinute %>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Unique Event Types</h3>
+                <div class="value">
+                    <%= result.features.uniqueEventTypes %>
+                </div>
+            </div>
+
+        </div>
+
+
+        <div class="content">
+
+            <div class="section">
+
+                <h2>📊 Detection Features</h2>
+
+                <table>
+
+                    <tr>
+                        <th>Feature</th>
+                        <th>Value</th>
+                    </tr>
+
+                    <tr>
+                        <td>Total Events</td>
+                        <td><%= result.features.totalEvents %></td>
+                    </tr>
+
+                    <tr>
+                        <td>Session Duration</td>
+                        <td>
+                            <%= result.features.sessionDurationSeconds %> sec
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>Events per Minute</td>
+                        <td><%= result.features.eventsPerMinute %></td>
+                    </tr>
+
+                    <tr>
+                        <td>Average Interval</td>
+                        <td>
+                            <%= result.features.averageIntervalMs %> ms
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>Median Interval</td>
+                        <td>
+                            <%= result.features.medianIntervalMs %> ms
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>Coefficient of Variation</td>
+                        <td>
+                            <%= result.features.coefficientVariation %>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>Short Interval Ratio</td>
+                        <td>
+                            <%= result.features.shortIntervalRatio %>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>Repetition Ratio</td>
+                        <td>
+                            <%= result.features.repetitionRatio %>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>Event Type Diversity</td>
+                        <td>
+                            <%= result.features.eventTypeDiversity %>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>Transition Repetition</td>
+                        <td>
+                            <%= result.features.transitionRepetitionRatio %>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>Meaningful Event Ratio</td>
+                        <td>
+                            <%= result.features.meaningfulEventRatio %>
+                        </td>
+                    </tr>
+
+                </table>
+
+            </div>
+
+
+            <div class="section">
+
+                <h2>🔍 Event Type Distribution</h2>
+
+                <table>
+
+                    <tr>
+                        <th>Event Type</th>
+                        <th>Count</th>
+                    </tr>
+
+                    <% Object.entries(result.eventTypeCounts).forEach(([type, count]) => { %>
+
+                        <tr>
+                            <td><%= type %></td>
+                            <td><%= count %></td>
+                        </tr>
+
+                    <% }) %>
+
+                </table>
+
+            </div>
+
+        </div>
+
+
+        <div class="section" style="margin-top: 20px;">
+
+            <h2>💡 Detection Reasons</h2>
+
+            <% if (result.reasons && result.reasons.length > 0) { %>
+
+                <ul class="reason-list">
+
+                    <% result.reasons.forEach(reason => { %>
+
+                        <li>
+                            <%= reason %>
+                        </li>
+
+                    <% }) %>
+
+                </ul>
+
+            <% } else { %>
+
+                <p style="color: #059669;">
+                    ✓ No strong bot-like patterns were detected.
+                </p>
+
+            <% } %>
+
+        </div>
+
+
+    <% } %>
+
+</div>
+
+</body>
+</html>

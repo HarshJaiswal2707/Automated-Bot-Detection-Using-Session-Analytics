@@ -7,15 +7,21 @@
         </div>
         <!-- Card -->
         <div class="card col-6 offset-3 show-card listing-card">
-            <img src="<%= listing.image.url %>" class="card-img-top img-fluid" alt="listing_img">
+            <img src="<%= listing.image.url %>"
+                class="card-img-top img-fluid"
+                alt="listing_img">
             <div class="card-body">
-                <p>Owned by <i>
+                <p>
+                    Owned by
+                    <i>
                         <%= listing.owner.username %>
-                    </i></p>
+                    </i>
+                </p>
                 <p>
                     <%= listing.description %>
                 </p>
-                <p>₹ <%= listing.price.toLocaleString("en-IN") %>
+                <p>
+                    ₹ <%= listing.price.toLocaleString("en-IN") %>
                 </p>
                 <p>
                     <%= listing.location %>
@@ -26,90 +32,274 @@
             </div>
         </div>
         <!-- Buttons -->
-        <% if(currUser && listing.owner._id.equals(currUser._id)) { %>
-            <div class="btns mt-3">
-                <a href="/listings/<%= listing._id %>/edit" class="btn btn-dark col-1 offset-3">Edit</a>
-                <form method="POST" action="/listings/<%= listing._id %>?_method=DELETE">
-                    <button class="btn btn-dark offset-5">Delete</button>
-                </form>
-            </div>
-            <% } %>
-                <!-- Reviews -->
-                <div class="col-8 offset-2 mb-3">
-                    <% if(currUser) { %>
-                        <hr>
-                        <h4>Leave a Review</h4>
-                        <form action="/listings/<%= listing._id %>/reviews" method="post" novalidate
-                            class="needs-validation">
-                            <div class="mb-3 mt-3">
-                                <fieldset class="starability-slot">
-                                    <input type="radio" id="first-rate1" name="review[rating]" value="1" />
-                                    <label for="first-rate1">1 star</label>
+<% if(currUser && listing.owner._id.equals(currUser._id)) { %>
+    <div class="btns mt-3">
+        <!-- EDIT LISTING -->
+        <a
+            href="/listings/<%= listing._id %>/edit"
+            class="btn btn-dark col-1 offset-3"
+            id="editListingBtn"
+        >
+            Edit
+        </a>
+        <!-- DELETE LISTING -->
+        <form
+            method="POST"
+            action="/listings/<%= listing._id %>?_method=DELETE"
+            id="deleteListingForm"
+        >
+            <button
+                class="btn btn-dark offset-5"
+                type="submit"
+            >
+                Delete
+            </button>
+        </form>
+    </div>
+    <!-- LISTING ACTION TRACKING -->
+    <script>
+        const editListingBtn = document.getElementById("editListingBtn");
+        if (editListingBtn) {
+            editListingBtn.addEventListener("click", function () {
+                window.WanderlustAnalytics.trackEvent(
+                    "listing_action",
+                    {
+                        listingId: "<%= listing._id %>",
 
-                                    <input type="radio" id="first-rate2" name="review[rating]" value="2" />
-                                    <label for="first-rate2">2 stars</label>
-
-                                    <input type="radio" id="first-rate3" name="review[rating]" value="3" />
-                                    <label for="first-rate3">3 stars</label>
-
-                                    <input type="radio" id="first-rate4" name="review[rating]" value="4" />
-                                    <label for="first-rate4">4 stars</label>
-
-                                    <input type="radio" id="first-rate5" name="review[rating]" value="5" />
-                                    <label for="first-rate5">5 stars</label>
-                                </fieldset>
-                            </div>
-                            <div class="mb-3 mt-3">
-                                <label for="comment" class="form-label">Comments</label>
-                                <textarea name="review[comment]" id="comment" cols="30" rows="5" class="form-control"
-                                    required></textarea>
-                            </div>
-                            <button class="btn btn-outline-dark">Submit</button>
-                        </form>
-                        <% } %>
-                            <!-- All Reviews -->
-                            <% if(listing.reviews.length> 0) { %>
-                                <div class="row mt-3">
-                                    <p><b>All Reviews</b></p>
-                                    <% for (review of listing.reviews) { %>
-                                        <div class="card col-12 col-md-5 ms-md-3 mb-3">
-                                            <div class="card-body">
-                                                <h5>
-                                                    <%= review.author.username %>
-                                                </h5>
-                                                <p class="starability-result" data-rating="<%= review.rating %>">
-                                                    Rated: <%= review.rating %> stars
-                                                </p>
-                                                <p>
-                                                    <%= review.comment %>
-                                                </p>
-                                            </div>
-
-                                            <form method="POST"
-                                                action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE">
-                                                <button class="btn btn-sm btn-dark">Delete</button>
-                                            </form>
-                                        </div>
-                                        <% } %>
-                                </div>
-                                <% } %>
-                </div>
-                <!-- MAP SECTION -->
-                <div class="row">
-                    <div class="col-8 offset-2">
-                        <h3>Where you'll be</h3>
-                        <div id="map"></div>
+                        metadata: {
+                            action: "edit_listing"
+                        }
+                    }
+                );
+            });
+        }
+        const deleteListingForm = document.getElementById("deleteListingForm");
+        if (deleteListingForm) {
+            deleteListingForm.addEventListener("submit",function () {
+                    window.WanderlustAnalytics.trackEvent(
+                        "listing_action",
+                        {
+                            listingId: "<%= listing._id %>",
+                            metadata: {
+                                action: "delete_listing"
+                            }
+                        }
+                    );
+                }
+            );
+        }
+    </script>
+<% } %>
+        <!-- Reviews -->
+        <div class="col-8 offset-2 mb-3">
+            <% if(currUser) { %>
+                <hr>
+                <h4>Leave a Review</h4>
+                <form
+                    action="/listings/<%= listing._id %>/reviews"
+                    method="post"
+                    novalidate
+                    class="needs-validation"
+                    id="reviewForm"
+                >
+                    <!-- ANALYTICS SESSION ID -->
+                    <input
+                        type="hidden"
+                        name="behaviorSessionId"
+                        id="behaviorSessionId"
+                    >
+                    <!-- Rating -->
+                    <div class="mb-3 mt-3">
+                        <fieldset class="starability-slot">
+                            <input
+                                type="radio"
+                                id="first-rate1"
+                                name="review[rating]"
+                                value="1"
+                                class="review-rating"
+                            />
+                            <label for="first-rate1">
+                                1 star
+                            </label>
+                            <input
+                                type="radio"
+                                id="first-rate2"
+                                name="review[rating]"
+                                value="2"
+                                class="review-rating"
+                            />
+                            <label for="first-rate2">
+                                2 stars
+                            </label>
+                            <input
+                                type="radio"
+                                id="first-rate3"
+                                name="review[rating]"
+                                value="3"
+                                class="review-rating"
+                            />
+                            <label for="first-rate3">
+                                3 stars
+                            </label>
+                            <input
+                                type="radio"
+                                id="first-rate4"
+                                name="review[rating]"
+                                value="4"
+                                class="review-rating"
+                            />
+                            <label for="first-rate4">
+                                4 stars
+                            </label>
+                            <input
+                                type="radio"
+                                id="first-rate5"
+                                name="review[rating]"
+                                value="5"
+                                class="review-rating"
+                            />
+                            <label for="first-rate5">
+                                5 stars
+                            </label>
+                        </fieldset>
                     </div>
+                    <!-- Comment -->
+                    <div class="mb-3 mt-3">
+                        <label for="comment" class="form-label">
+                            Comments
+                        </label>
+                        <textarea
+                            name="review[comment]"
+                            id="comment"
+                            cols="30"
+                            rows="5"
+                            class="form-control"
+                            required
+                        ></textarea>
+                    </div>
+                    <button class="btn btn-outline-dark">
+                        Submit
+                    </button>
+                </form>
+                <script>
+                    const behaviorSessionId =
+                        sessionStorage.getItem(
+                            "wanderlust_behavior_session"
+                        );
+                    document.getElementById(
+                        "behaviorSessionId"
+                    ).value = behaviorSessionId || "";
+                </script>
+                <!-- REVIEW INTERACTION TRACKING -->
+                <script>
+                    const reviewForm = document.getElementById("reviewForm");
+                    if (reviewForm) {
+                        reviewForm.addEventListener("focusin",function () {
+                                if (!reviewForm.dataset.tracked) {
+                                    reviewForm.dataset.tracked =
+                                        "true";
+                                    window.WanderlustAnalytics.trackEvent(
+                                        "review_interaction",
+                                        {
+                                            listingId:
+                                                "<%= listing._id %>",
+                                            metadata: {
+                                                interaction:
+                                                    "review_form_started"
+                                            }
+                                        }
+                                    );
+                                    console.log(
+                                        "Review interaction tracked"
+                                    );
+                                }
+                            }
+                        );
+                    }
+                </script>
+            <% } %>
+            <!-- All Reviews -->
+            <% if(listing.reviews.length > 0) { %>
+                <div class="row mt-3">
+                    <p>
+                        <b>All Reviews</b>
+                    </p>
+                    <% for (review of listing.reviews) { %>
+                        <div class="card col-12 col-md-5 ms-md-3 mb-3">
+                            <div class="card-body">
+                                <h5>
+                                    <%= review.author.username %>
+                                </h5>
+                                <p
+                                    class="starability-result"
+                                    data-rating="<%= review.rating %>"
+                                >
+                                    Rated:
+                                    <%= review.rating %>
+                                    stars
+                                </p>
+                                <p>
+                                    <%= review.comment %>
+                                </p>
+                            </div>
+                            <form
+                                method="POST"
+                                action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE"
+                            >
+                                <button class="btn btn-sm btn-dark">
+                                    Delete
+                                </button>
+                            </form>
+                        </div>
+                    <% } %>
                 </div>
+            <% } %>
+        </div>
+        <!-- MAP SECTION -->
+        <div class="row">
+            <div class="col-8 offset-2">
+                <h3>
+                    Where you'll be
+                </h3>
+                <div id="map"></div>
+            </div>
+        </div>
     </div>
     <!-- Leaflet -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <!--DATA PASS -->
-    <script>
-        const lat = <%=listing.coordinates?.lat|| 28.61 %>;
-        const lng = <%=listing.coordinates?.lng|| 77.23 %>;
-        const title = "<%=listing.title%>";
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet/dist/leaflet.css"
+    />
+    <script
+        src="https://unpkg.com/leaflet/dist/leaflet.js">
     </script>
-    <!-- MAP JS -->
+    <script>
+        const lat =
+            <%= listing.coordinates?.lat || 28.61 %>;
+
+        const lng =
+            <%= listing.coordinates?.lng || 77.23 %>;
+
+        const title =
+            "<%= listing.title %>";
+    </script>
     <script src="/js/map.js"></script>
+    <script>
+        window.WanderlustAnalytics.trackEvent(
+            "listing_view",
+            {
+                listingId:
+                    "<%= listing._id %>",
+                metadata: {
+                    title:
+                        "<%= listing.title %>",
+
+                    location:
+                        "<%= listing.location %>",
+
+                    country:
+                        "<%= listing.country %>"
+                }
+            }
+        );
+    </script>

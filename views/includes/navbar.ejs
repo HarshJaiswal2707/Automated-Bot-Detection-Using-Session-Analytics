@@ -45,12 +45,36 @@
         <a class="nav-link" href="/listings">Explore</a>
       </div>
 
-      <!-- Search bar (center/right) -->
-      <form class="d-flex ms-auto me-3" role="search" action="/listings" method="GET">
-        <input class="form-control me-2 search-inp" type="search" name="search" placeholder="Search destinations" />
-        <button class="btn search-btn" type="submit">
-          <i class="fa-solid fa-magnifying-glass"></i>Search</button>
-      </form>
+<form class="d-flex ms-auto me-3" role="search" action="/listings" method="GET" id="searchForm">
+  <input
+    class="form-control me-2 search-inp"
+    type="search"
+    name="search"
+    placeholder="Search destinations"
+    id="searchInput"
+  />
+
+  <button class="btn search-btn" type="submit">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    Search
+  </button>
+</form>
+
+<script>
+  document.getElementById("searchForm").addEventListener("submit", function () {
+    const searchInput = document.getElementById("searchInput");
+
+    const query = searchInput.value.trim();
+
+    if (query) {
+      window.WanderlustAnalytics.trackEvent("search", {
+        metadata: {
+          query: query
+        }
+      });
+    }
+  });
+</script>
 
       <!-- Right side -->
       <div class="navbar-nav">
